@@ -13,5 +13,17 @@
     "ejs": "^2.5.7",
     "express": "^4.15.4",
     "mongoose": "^4.11.6"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quadratus/yelpcamp.git"
+  },
+  "keywords": [
+    "Project"
+  ],
+  "bugs": {
+    "url": "https://github.com/quadratus/yelpcamp/issues"
+  },
+  "homepage": "https://github.com/quadratus/yelpcamp#readme"
 }
