@@ -3,9 +3,12 @@ var express = require("express"),
     app = express(),
     bodyparser = require("body-parser"),
     mongoose = require("mongoose"),
-    Campground = require("./models/campground");
-    Comments = require("./models/comments");
-    seedDB = require("./seeds");
+    Campground = require("./models/campground"),
+    Comments = require("./models/comments"),
+    seedDB = require("./seeds"),
+    passport = require("passport"),
+    LocalStrategy = require("passport-local"),
+    User = require("./models/user")
 
 
 //Connect app to MongoDB via mongoose.
@@ -18,6 +21,18 @@ app.use(bodyparser.urlencoded({extended: true}));
 app.set("view engine","ejs");
 //  seedDB();
 app.use(express.static(__dirname + "/public"));
+//Passport configuration
+app.use(require("express-session")({
+    secret: "You only got one shot,one opportunity.",
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser);
+passport.deserializeUser(User.deserializeUser);
 
 app.get("/",function(req,res){
     res.render("landing");
@@ -96,11 +111,23 @@ app.post("/campgrounds/:id/comments",function(req,res){
                 }
             })
         }
-    });
-    
-
+    });   
 });
 
+app.get("/register",function(req,res){
+    res.render("register");
+})
+app.post("/register",function(req,res){
+    User.register(new User({username: req.body.username}),req.body.passport,function(err,user){
+        if(err){
+            console.log(err);
+            res.redirect("register");
+        }
+        passport.authenticate("local")(req,res,function(){
+            res.redirect("/campgrounds");
+        })
+    });
+})
 app.listen(3000,function(req,res){
     console.log("Serving app on port 3000.");
 
