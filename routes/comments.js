@@ -1,7 +1,7 @@
 var express = require("express");
-var router  = express.Router({mergeParams: true});
+var router = express.Router({ mergeParams: true });
 var Campground = require("../models/campground");
-var Comment = require("../models/comments");
+var Comments = require("../models/comments");
 
 //Comment routes
 router.get("/new", isLoggedIn, function (req, res) {
@@ -24,6 +24,9 @@ router.post("/", isLoggedIn, function (req, res) {
                 if (err) {
                     console.log(err);
                 } else {
+                    comment.author.id = req.user._id;
+                    comment.author.username = req.user.username;
+                    comment.save();
                     camper.comments.push(comment);
                     camper.save();
                     res.redirect("/campgrounds/" + camper._id);
@@ -33,9 +36,39 @@ router.post("/", isLoggedIn, function (req, res) {
     });
 });
 
+router.get("/:comment_id/edit", function (req, res) {
+    Comments.findById(req.params.comment_id, function (err, foundComment) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.render("comments/edit", { campground_id: req.params.id, comment: foundComment });
+        }
+    });
+});
+
+router.put("/:comment_id", function (req, res) {
+    Comments.findByIdAndUpdate(req.params.comment_id, req.body.comment, function (err, updatedComment) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.redirect("/campgrounds/" + req.params.id);
+        }
+    })
+})
+
+rotuer.delete("/:comment_id",function(req,res){
+    Comments.findByIdAndRemove(req.params.comment_id,function(err){
+        if(err){
+            console.log(err);
+        }else{
+            res.render("/campgrounds/"+ req.params.id);
+        }
+    })
+})
+
 //middleware
-function isLoggedIn(req, res, next){
-    if(req.isAuthenticated()){
+function isLoggedIn(req, res, next) {
+    if (req.isAuthenticated()) {
         return next();
     }
     res.redirect("/login");

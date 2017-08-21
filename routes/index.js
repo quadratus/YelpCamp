@@ -9,10 +9,10 @@ router.get("/", function (req, res) {
 
 //REGISTER ROUTES
 
-app.get("/register", function (req, res) {
+router.get("/register", function (req, res) {
     res.render("register");
 })
-app.post("/register", function (req, res, next) {
+router.post("/register", function (req, res, next) {
     //We pass only the username to the database. Passport takes the password and generates a hash value and salt and stores in the User model.
     var newUser = new User({ username: req.body.username });
     User.register(newUser, req.body.password, function (err, user) {
@@ -24,16 +24,16 @@ app.post("/register", function (req, res, next) {
 
 //LOGIN ROUTES
 
-app.get("/login", function (req, res) {
+router.get("/login", function (req, res) {
     res.render("login");
 })
 
-app.post("/login", passport.authenticate("local", {
+router.post("/login", passport.authenticate("local", {
     successRedirect: "/campgrounds",
     failureRedirect: "login"
 }), function (req, res) { });
 
-app.get("/logout", function (req, res) {
+router.get("/logout", function (req, res) {
     req.logout();
     res.redirect("/campgrounds");
 })
