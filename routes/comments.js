@@ -2,9 +2,9 @@ var express = require("express");
 var router = express.Router({ mergeParams: true });
 var Campground = require("../models/campground");
 var Comments = require("../models/comments");
-
+var middleware = require("../middleware");
 //Comment routes
-router.get("/new", isLoggedIn, function (req, res) {
+router.get("/new", middleware.isLoggedIn, function (req, res) {
     Campground.findById(req.params.id, function (err, foundIt) {
         if (err) {
             console.log(err);
@@ -14,7 +14,7 @@ router.get("/new", isLoggedIn, function (req, res) {
     })
 });
 
-router.post("/", isLoggedIn, function (req, res) {
+router.post("/", middleware.isLoggedIn, function (req, res) {
     Campground.findById(req.params.id, function (err, camper) {
         if (err) {
             console.log(err);
@@ -36,7 +36,7 @@ router.post("/", isLoggedIn, function (req, res) {
     });
 });
 
-router.get("/:comment_id/edit", function (req, res) {
+router.get("/:comment_id/edit", middleware.checkCommentOwnership, function (req, res) {
     Comments.findById(req.params.comment_id, function (err, foundComment) {
         if (err) {
             console.log(err);
@@ -46,7 +46,7 @@ router.get("/:comment_id/edit", function (req, res) {
     });
 });
 
-router.put("/:comment_id", function (req, res) {
+router.put("/:comment_id", middleware.checkCommentOwnership, function (req, res) {
     Comments.findByIdAndUpdate(req.params.comment_id, req.body.comment, function (err, updatedComment) {
         if (err) {
             console.log(err);
@@ -56,23 +56,15 @@ router.put("/:comment_id", function (req, res) {
     })
 })
 
-rotuer.delete("/:comment_id",function(req,res){
+router.delete("/:comment_id", middleware.checkCommentOwnership, function(req,res){
     Comments.findByIdAndRemove(req.params.comment_id,function(err){
         if(err){
             console.log(err);
         }else{
-            res.render("/campgrounds/"+ req.params.id);
+            res.redirect("/campgrounds/"+req.params.id);
         }
     })
 })
-
-//middleware
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect("/login");
-}
 
 
 module.exports = router;
